@@ -248,9 +248,8 @@ namespace vcpkg::Paragraphs
         return pghs.error();
     }
 
-    LoadResults try_load_all_ports(const Files::Filesystem& fs, const fs::path& ports_dir)
+    void try_load_all_ports_internal(const Files::Filesystem &fs, const fs::path &ports_dir, LoadResults &ret)
     {
-        LoadResults ret;
         auto port_dirs = fs.get_files_non_recursive(ports_dir);
         Util::sort(port_dirs);
         Util::erase_remove_if(port_dirs, [&](auto&& port_dir_entry) {
@@ -269,13 +268,25 @@ namespace vcpkg::Paragraphs
                 ret.errors.emplace_back(std::move(maybe_spgh).error());
             }
         }
+    }
+
+    LoadResults try_load_all_ports(const Files::Filesystem& fs, const fs::path& ports_dir, const std::vector<fs::path> &additional_ports)
+    {
+        LoadResults ret;
+        try_load_all_ports_internal(fs, ports_dir, ret);
+        // need lazy join for clean code?
+        for(const auto& adp: additional_ports)
+        {
+            try_load_all_ports_internal(fs, adp, ret);
+        }
         return ret;
     }
 
     std::vector<std::unique_ptr<SourceControlFile>> load_all_ports(const Files::Filesystem& fs,
-                                                                   const fs::path& ports_dir)
+                                                                   const fs::path& ports_dir,
+                                                                   const std::vector<fs::path> &additional_ports)
     {
-        auto results = try_load_all_ports(fs, ports_dir);
+        auto results = try_load_all_ports(fs, ports_dir, additional_ports);
         if (!results.errors.empty())
         {
             if (GlobalState::debugging)

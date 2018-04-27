@@ -428,7 +428,7 @@ namespace vcpkg::Install
 
     std::vector<std::string> get_all_port_names(const VcpkgPaths& paths)
     {
-        auto sources_and_errors = Paragraphs::try_load_all_ports(paths.get_filesystem(), paths.ports);
+        auto sources_and_errors = Paragraphs::try_load_all_ports(paths.get_filesystem(), paths.ports, paths.additional_ports);
 
         return Util::fmap(sources_and_errors.paragraphs,
                           [](auto&& pgh) -> std::string { return pgh->core_paragraph->name; });
@@ -565,7 +565,7 @@ namespace vcpkg::Install
             Build::CleanPackages::NO,
             download_tool};
 
-        auto all_ports = Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports);
+        auto all_ports = Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports, paths.additional_ports);
         std::unordered_map<std::string, SourceControlFile> scf_map;
         for (auto&& port : all_ports)
             scf_map[port->core_paragraph->name] = std::move(*port);

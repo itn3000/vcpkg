@@ -100,7 +100,7 @@ namespace vcpkg::Commands::Search
         const ParsedArguments options = args.parse_arguments(COMMAND_STRUCTURE);
         const bool full_description = Util::Sets::contains(options.switches, OPTION_FULLDESC);
 
-        auto source_paragraphs = Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports);
+        auto source_paragraphs = Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports, paths.additional_ports);
 
         if (Util::Sets::contains(options.switches, OPTION_GRAPH))
         {

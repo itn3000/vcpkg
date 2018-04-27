@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include <iostream>
 #include <vcpkg/base/expected.h>
 #include <vcpkg/base/files.h>
 #include <vcpkg/base/system.h>
@@ -12,6 +13,44 @@
 
 namespace vcpkg
 {
+    namespace
+    {
+        std::vector<fs::path> get_addtional_ports(const fs::path& vcpkg_root_dir)
+        {
+            auto setting = vcpkg_root_dir / ".vcpkg-ports";
+            if (fs::stdfs::is_regular_file(setting))
+            {
+                auto stm = std::ifstream(setting.generic_string(), std::ios::in);
+                auto ret = std::vector<fs::path>();
+                if (stm.is_open())
+                {
+                    char buf[1024];
+                    while (!stm.eof())
+                    {
+                        buf[1023] = 0;
+                        stm.getline(buf, 1024);
+                        if(buf[0] == 0 || strcmp(buf, ".") == 0 || strcmp(buf, "..") == 0)
+                        {
+                            continue;
+                        }
+                        auto relpath = fs::path(buf);
+                        std::error_code ec;
+                        auto abspath = fs::stdfs::canonical(relpath, ec);
+                        if(ec)
+                        {
+                            continue;
+                        }
+                        ret.push_back(abspath);
+                    }
+                }
+                return std::move(ret);
+            }
+            else
+            {
+                return std::vector<fs::path>();
+            }
+        }
+    }
     Expected<VcpkgPaths> VcpkgPaths::create(const fs::path& vcpkg_root_dir, const std::string& default_vs_path)
     {
         std::error_code ec;
@@ -49,13 +88,38 @@ namespace vcpkg
 
         paths.ports_cmake = paths.scripts / "ports.cmake";
 
+        paths.additional_ports = get_addtional_ports(paths.root);
+
         return paths;
     }
 
     fs::path VcpkgPaths::package_dir(const PackageSpec& spec) const { return this->packages / spec.dir(); }
 
-    fs::path VcpkgPaths::port_dir(const PackageSpec& spec) const { return this->ports / spec.name(); }
-    fs::path VcpkgPaths::port_dir(const std::string& name) const { return this->ports / name; }
+    fs::path VcpkgPaths::port_dir(const PackageSpec& spec) const 
+    {
+        return this->port_dir(spec.name());
+    }
+    fs::path VcpkgPaths::port_dir(const std::string& name) const 
+    { 
+        auto ret = this->ports / name;
+        if(fs::stdfs::is_directory(ret))
+        {
+            return ret;
+        }
+        else
+        {
+            for(const auto &adp: this->additional_ports)
+            {
+                auto tmp = adp / name;
+                if(fs::stdfs::is_directory(tmp))
+                {
+                    return tmp;
+                }
+            }
+            // if not found, return default
+            return ret;
+        }
+    }
 
     fs::path VcpkgPaths::build_info_file_path(const PackageSpec& spec) const
     {

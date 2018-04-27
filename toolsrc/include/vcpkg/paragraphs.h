@@ -25,8 +25,9 @@ namespace vcpkg::Paragraphs
         std::vector<std::unique_ptr<Parse::ParseControlErrorInfo>> errors;
     };
 
-    LoadResults try_load_all_ports(const Files::Filesystem& fs, const fs::path& ports_dir);
+    LoadResults try_load_all_ports(const Files::Filesystem& fs, const fs::path& ports_dir, const std::vector<fs::path> &additional_ports);
 
     std::vector<std::unique_ptr<SourceControlFile>> load_all_ports(const Files::Filesystem& fs,
-                                                                   const fs::path& ports_dir);
+                                                                   const fs::path& ports_dir,
+                                                                   const std::vector<fs::path> &additional_ports);
 }

@@ -853,7 +853,7 @@ namespace vcpkg::PostBuildLint
 
         if (error_count != 0)
         {
-            const fs::path portfile = paths.ports / spec.name() / "portfile.cmake";
+            const fs::path portfile = paths.port_dir(spec.name()) / "portfile.cmake";
             System::println(System::Color::error,
                             "Found %u error(s). Please correct the portfile:\n    %s",
                             error_count,

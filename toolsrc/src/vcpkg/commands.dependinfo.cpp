@@ -22,7 +22,7 @@ namespace vcpkg::Commands::DependInfo
         Util::unused(args.parse_arguments(COMMAND_STRUCTURE));
 
         std::vector<std::unique_ptr<SourceControlFile>> source_control_files =
-            Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports);
+            Paragraphs::load_all_ports(paths.get_filesystem(), paths.ports, paths.additional_ports);
 
         if (args.command_arguments.size() == 1)
         {

@@ -40,7 +40,7 @@ namespace vcpkg::Commands::Edit
 
     static std::vector<std::string> valid_arguments(const VcpkgPaths& paths)
     {
-        auto sources_and_errors = Paragraphs::try_load_all_ports(paths.get_filesystem(), paths.ports);
+        auto sources_and_errors = Paragraphs::try_load_all_ports(paths.get_filesystem(), paths.ports, paths.additional_ports);
 
         return Util::fmap(sources_and_errors.paragraphs,
                           [](auto&& pgh) -> std::string { return pgh->core_paragraph->name; });
@@ -65,7 +65,7 @@ namespace vcpkg::Commands::Edit
         if (Util::Sets::contains(options.switches, OPTION_ALL))
         {
             return Util::fmap(ports, [&](const std::string& port_name) -> std::string {
-                const auto portpath = paths.ports / port_name;
+                const auto portpath = paths.port_dir(port_name);
                 const auto portfile = portpath / "portfile.cmake";
                 const auto buildtrees_current_dir = paths.buildtrees / port_name;
                 return Strings::format(R"###("%s" "%s" "%s")###",
@@ -83,7 +83,7 @@ namespace vcpkg::Commands::Edit
         }
 
         return Util::fmap(ports, [&](const std::string& port_name) -> std::string {
-            const auto portpath = paths.ports / port_name;
+            const auto portpath = paths.port_dir(port_name);
             const auto portfile = portpath / "portfile.cmake";
             return Strings::format(R"###("%s" "%s")###", portpath.u8string(), portfile.u8string());
         });
@@ -101,7 +101,7 @@ namespace vcpkg::Commands::Edit
         const std::vector<std::string>& ports = args.command_arguments;
         for (auto&& port_name : ports)
         {
-            const fs::path portpath = paths.ports / port_name;
+            const fs::path portpath = paths.port_dir(port_name);
             Checks::check_exit(
                 VCPKG_LINE_INFO, fs.is_directory(portpath), R"(Could not find port named "%s")", port_name);
         }

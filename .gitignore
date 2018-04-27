@@ -297,6 +297,7 @@ triplets/*
 !triplets/x64-osx.cmake
 *.exe
 *.zip
+.vcpkg-ports
 
 ############################################################
 # vcpkg - End

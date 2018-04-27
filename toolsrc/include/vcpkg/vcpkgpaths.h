@@ -86,6 +86,8 @@ namespace vcpkg
 
         Files::Filesystem& get_filesystem() const;
 
+        std::vector<fs::path> additional_ports;
+
     private:
         Lazy<std::vector<std::string>> available_triplets;
         Cache<std::string, fs::path> tool_paths;

@@ -100,7 +100,7 @@ namespace vcpkg::Commands::PortsDiff
                             git_exe.u8string());
         System::cmd_execute_clean(cmd);
         const auto all_ports =
-            Paragraphs::load_all_ports(paths.get_filesystem(), temp_checkout_path / ports_dir_name_as_string);
+            Paragraphs::load_all_ports(paths.get_filesystem(), temp_checkout_path / ports_dir_name_as_string, std::vector<fs::path>());
         std::map<std::string, VersionT> names_and_versions;
         for (auto&& port : all_ports)
             names_and_versions.emplace(port->core_paragraph->name, port->core_paragraph->version);
